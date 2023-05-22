@@ -38,6 +38,7 @@ for (int i = secondsUntilBirthday; i >= 0; i--)
     Console.Write(new string(' ', Console.WindowWidth)); 
     Console.SetCursorPosition(0, --currentLineCursor); 
 }
-Console.WriteLine("«Поздравляем, вам исполнилось {0} + 1", fullYears);
+Console.WriteLine("Поздравляем, вам исполнилось {0} + 1", fullYears);
+Console.ReadLine();
 
 
