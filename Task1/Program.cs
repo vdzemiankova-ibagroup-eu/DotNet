@@ -11,7 +11,17 @@ namespace Task1
             Console.WriteLine("Введите свои имя, фамилию и год рождения по следующему шаблону:");
             Console.WriteLine("Иван Иванов 03/24/2001\n");
             string input = ValidateInput();
-            Person person = new Person(input);
+            Person person = null;
+            try
+            {
+                person = new Person(input);
+            }
+            catch
+            {
+                Console.WriteLine("Не удалось распарсить введённую строку");
+                Console.ReadLine();
+                Environment.Exit(1);
+            }
             person.PrintPerson();
             person.BirthdayCountdown();
             person.PrintHappyBirthday();
