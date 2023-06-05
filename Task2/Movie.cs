@@ -19,66 +19,66 @@ namespace Task2
     [XmlType(TypeName = "Record")]
     public class Movie : INotifyPropertyChanged, IDataErrorInfo
     {
-        private int id;
-        private string firstName;
-        private string lastName;
-        private string movieName;
-        private int movieYear;
-        private decimal movieRating;
+        private int _Id;
+        private string _FirstName;
+        private string _LastName;
+        private string _MovieName;
+        private int? _MovieYear;
+        private decimal? _MovieRating;
 
         [XmlAttribute("id")]
         public int Id
         {
-            get { return id; }
+            get { return _Id; }
             set
             {
-                id = value;
+                _Id = value;
                 OnPropertyChanged("Id");
             }
         }
         public string FirstName
         {
-            get { return firstName; }
+            get { return _FirstName; }
             set
             {
-                firstName = value;
+                _FirstName = value;
                 OnPropertyChanged("FirstName");
             }
         }
         public string LastName
         {
-            get { return lastName; }
+            get { return _LastName; }
             set
             {
-                lastName = value;
+                _LastName = value;
                 OnPropertyChanged("LastName");
             }
         }
         public string MovieName
         {
-            get { return movieName; }
+            get { return _MovieName; }
             set
             {
-                movieName = value;
+                _MovieName = value;
                 OnPropertyChanged("MovieName");
             }
         }
 
-        public int MovieYear
+        public int? MovieYear
         {
-            get { return movieYear; }
+            get { return _MovieYear.GetValueOrDefault(0); }
             set
             {
-                movieYear = value;
+                _MovieYear = value.GetValueOrDefault(0);
                 OnPropertyChanged("MovieYear");
             }
         }
-        public decimal MovieRating
+        public decimal? MovieRating
         {
-            get { return movieRating; }
+            get { return _MovieRating.GetValueOrDefault(0.0m); }
             set
             {
-                movieRating = value;
+                _MovieRating = value.GetValueOrDefault(0.0m);
                 OnPropertyChanged("MovieRating");
             }
         }

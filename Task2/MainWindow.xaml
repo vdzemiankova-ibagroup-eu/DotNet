@@ -43,9 +43,16 @@
             </DataGrid.Columns>
         </DataGrid>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Content="Назад" Command="{Binding MoveToPreviousPage}" />
-            <TextBlock FontSize="20" Text="{Binding PageIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="20 0 20 0"/>
-            <Button Content="Дальше" Command="{Binding MoveToNextPage}" />
+            <Button Content="Назад" Command="{Binding MoveToPreviousPage}" IsEnabled="{Binding IsPreviousEnabled}"/>
+                <TextBlock FontSize="20" Margin="20 0 20 0">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0}/{1}" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                            <Binding Path="PageIndex" />
+                            <Binding Path="PageCount" />
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+                <Button Content="Дальше" Command="{Binding MoveToNextPage}" IsEnabled="{Binding IsNextEnabled}"/>
         </StackPanel>
         </StackPanel>
         <StackPanel Grid.Row="1" Grid.Column="1" Margin="10">
@@ -60,7 +67,7 @@
             <TextBlock Text="Год выхода" Margin="10 0 5 0"/>
             <TextBox Margin="10 0 10 0" >
                 <TextBox.Text>
-                    <Binding Path="MovieYear" UpdateSourceTrigger="LostFocus">
+                    <Binding Path="MovieYear" UpdateSourceTrigger="LostFocus" Mode="OneWayToSource" TargetNullValue="">
                         <Binding.ValidationRules>
                             <DataErrorValidationRule  />
                         </Binding.ValidationRules>
@@ -68,11 +75,11 @@
                 </TextBox.Text>
             </TextBox>
             <TextBlock Text="Рейтинг" Margin="10 0 5 0"/>
-            <TextBox Margin="10 0 10 0" >
+            <TextBox Margin="10 0 10 0">
                 <TextBox.Text>
-                    <Binding Path="MovieRating" UpdateSourceTrigger="LostFocus">
+                        <Binding Path="MovieRating" UpdateSourceTrigger="LostFocus" Mode="OneWayToSource" TargetNullValue="">
                         <Binding.ValidationRules>
-                            <DataErrorValidationRule />
+                            <DataErrorValidationRule  />
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>

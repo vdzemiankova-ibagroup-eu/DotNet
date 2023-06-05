@@ -22,17 +22,54 @@ namespace Task2
     public class ApplicationViewModel : INotifyPropertyChanged
     {
         private Movie selectedMovie;
-        private int pageSize = 5;
-        private int pageIndex = 1;
+
+        private int _PageSize = 5;
+
+        private int _PageIndex = 1;
         public int PageIndex
         {
-            get { return pageIndex; }
+            get { return _PageIndex; }
             set
             {
-                pageIndex = value;
+                _PageIndex = value;
                 OnPropertyChanged("PageIndex");
             }
         }
+
+        private int _PageCount = 1;
+        public int PageCount
+        {
+            get { return _PageCount; }
+            set
+            {
+                _PageCount = value;
+                OnPropertyChanged("PageCount");
+            }
+        }
+
+        private bool _IsPreviousEnabled = false;
+        public bool IsPreviousEnabled
+        {
+            get { return _IsPreviousEnabled; }
+            set
+            {
+                _IsPreviousEnabled = value;
+                OnPropertyChanged("IsPreviousEnabled");
+            }
+        }
+
+        private bool _IsNextEnabled = false;
+        public bool IsNextEnabled
+        {
+            get { return _IsNextEnabled; }
+            set
+            {
+                _IsNextEnabled = value;
+                OnPropertyChanged("IsNextEnabled");
+            }
+        }
+
+
         ApplicationContext db = new ApplicationContext();
 
         IFileOpenService fileOpenService;
@@ -44,10 +81,22 @@ namespace Task2
         private List<Movie> filteredMovies;
         public Movie MovieFilter { get; set; } = new Movie();
 
+        private void ViewPage() 
+        {
+            Movies.Clear();
+            foreach (Movie fm in filteredMovies.Skip(_PageSize * (PageIndex - 1)).Take(_PageSize))
+            {
+                Movies.Add(fm);
+            }
+
+            IsPreviousEnabled = PageIndex != 1;
+            IsNextEnabled = PageCount > PageIndex;
+
+        }
 
 
 
-    private RelayCommand saveCommand;
+        private RelayCommand saveCommand;
         public RelayCommand SaveCommand
         {
             get
@@ -84,21 +133,22 @@ namespace Task2
                           if (dialogService.OpenFileDialog() == true)
                           {
                               var movies = fileOpenService.Open(dialogService.FilePath);
+
                               foreach (var m in movies)
                               {
                                   Validate(m);
                                   db.Movies.Add(m);
                               }
                               db.SaveChanges();
+
                               db.Movies.Load();
-                              allMovies = (from movie in db.Movies select movie).ToList();
+                              allMovies = db.Movies.ToList();
                               filteredMovies = allMovies;
+
                               PageIndex = 1;
-                              Movies.Clear();
-                              foreach (Movie fm in filteredMovies.Skip(pageSize * (PageIndex - 1)).Take(pageSize))
-                              {
-                                  Movies.Add(fm);
-                              }
+                              PageCount = (int)Math.Ceiling((double)filteredMovies.Count / _PageSize);
+                              PageCount = PageCount == 0 ? 1 : PageCount;
+                              ViewPage();
                               
                               dialogService.ShowMessage($"Файл {dialogService.FilePath} открыт");
                           }
@@ -139,20 +189,8 @@ namespace Task2
                   {
                       try
                       {
-                          int count = filteredMovies.Count;
-                          if (count - pageSize * PageIndex > 0)
-                          {
-                              PageIndex += 1;
-                              Movies.Clear();
-                              foreach (Movie fm in filteredMovies.Skip(pageSize * (PageIndex - 1)).Take(pageSize))
-                              {
-                                  Movies.Add(fm);
-                              }
-                          }
-                          else
-                          {
-                              dialogService.ShowMessage("Достигнута последняя страница");
-                          }
+                          PageIndex += 1;
+                          ViewPage();
                       }
                       catch (Exception ex)
                       {
@@ -172,19 +210,8 @@ namespace Task2
                   {
                       try
                       {
-                          if (PageIndex != 1)
-                          {
-                              PageIndex -= 1;
-                              Movies.Clear();
-                              foreach (Movie fm in filteredMovies.Skip(pageSize * (PageIndex - 1)).Take(pageSize))
-                              {
-                                  Movies.Add(fm);
-                              }
-                          }
-                          else
-                          {
-                              dialogService.ShowMessage("Достигнута первая страница");
-                          }
+                          PageIndex -= 1;
+                          ViewPage();
                       }
                       catch (Exception ex)
                       {
@@ -205,6 +232,7 @@ namespace Task2
                       try
                       {
                           Validate(MovieFilter);
+
                           filteredMovies = (from movie in db.Movies
                                         where (movie.MovieName == MovieFilter.MovieName || MovieFilter.MovieName == null || MovieFilter.MovieName == "")
                                            && (movie.FirstName == MovieFilter.FirstName || MovieFilter.FirstName == null || MovieFilter.FirstName == "")
@@ -212,12 +240,11 @@ namespace Task2
                                            && (movie.MovieYear == MovieFilter.MovieYear || MovieFilter.MovieYear == 0)
                                            && (movie.MovieRating == MovieFilter.MovieRating || MovieFilter.MovieRating == 0m)
                                         select movie).ToList();
+
                           PageIndex = 1;
-                          Movies.Clear();
-                          foreach (Movie fm in filteredMovies.Skip(pageSize * (PageIndex - 1)).Take(pageSize))
-                          {
-                              Movies.Add(fm);
-                          }
+                          PageCount = (int)Math.Ceiling((double)filteredMovies.Count / _PageSize);
+                          PageCount = PageCount == 0 ? 1 : PageCount;
+                          ViewPage();
                       }
                       catch (Exception ex)
                       {
@@ -237,7 +264,11 @@ namespace Task2
             db.Movies.Load();
             allMovies = db.Movies.Local.ToList();
             filteredMovies = new List<Movie>(allMovies);
-            Movies = new ObservableCollection<Movie>(filteredMovies.Skip(pageSize * (PageIndex - 1)).Take(pageSize));
+            Movies = new ObservableCollection<Movie>(filteredMovies.Skip(_PageSize * (PageIndex - 1)).Take(_PageSize));
+
+            PageCount = (int)Math.Ceiling((double)filteredMovies.Count / _PageSize);
+            PageCount = PageCount == 0 ? 1 : PageCount;
+            IsNextEnabled = PageCount > PageIndex ? true : false;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
