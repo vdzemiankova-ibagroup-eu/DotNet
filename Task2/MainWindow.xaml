@@ -31,9 +31,10 @@
                 <MenuItem Header="Сохранить как xml файл" Command="{Binding SaveCommand}" CommandParameter="xml" />
                 <MenuItem Header="Сохранить как excel файл" Command="{Binding SaveCommand}" CommandParameter="excel" />
             </MenuItem>
+            <MenuItem Header="Новый токен" Command="{Binding NewTokenCommand}"/>
         </Menu>
         <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical">
-            <DataGrid ItemsSource="{Binding Movies}" SelectedItem="{Binding SelectedMovie}" AutoGenerateColumns="False" Height="220"  CanUserAddRows="False" Margin="0 0 0 10">
+            <DataGrid ItemsSource="{Binding Movies}" AutoGenerateColumns="False" Height="220"  CanUserAddRows="False" Margin="0 0 0 10">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Movie Name" Binding="{Binding MovieName}" />
                 <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" />

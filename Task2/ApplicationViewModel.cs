@@ -16,6 +16,8 @@ using DocumentFormat.OpenXml.Office2013.Word;
 using Microsoft.IdentityModel.Tokens;
 using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Wordprocessing;
+using System.Net.Http;
+using Newtonsoft.Json;
 
 namespace Task2
 {
@@ -26,6 +28,7 @@ namespace Task2
         private int _PageSize = 5;
 
         private int _PageIndex = 1;
+
         public int PageIndex
         {
             get { return _PageIndex; }
@@ -126,7 +129,7 @@ namespace Task2
             get
             {
                 return openCommand ??
-                  (openCommand = new RelayCommand(obj =>
+                  (openCommand = new RelayCommand(async obj =>
                   {
                       try
                       {
@@ -141,14 +144,11 @@ namespace Task2
                               }
                               db.SaveChanges();
 
-                              db.Movies.Load();
-                              allMovies = db.Movies.ToList();
-                              filteredMovies = allMovies;
-
+                              //db.Movies.Load();
+                              //allMovies = db.Movies.ToList();
                               PageIndex = 1;
-                              PageCount = (int)Math.Ceiling((double)filteredMovies.Count / _PageSize);
-                              PageCount = PageCount == 0 ? 1 : PageCount;
-                              ViewPage();
+
+                              LoadData();
                               
                               dialogService.ShowMessage($"Файл {dialogService.FilePath} открыт");
                           }
@@ -158,15 +158,6 @@ namespace Task2
                           dialogService.ShowMessage($"{ex.Message}\nДанные не сохранены");
                       }
                   }));
-            }
-        }
-        public Movie SelectedMovie
-        {
-            get { return selectedMovie; }
-            set
-            {
-                selectedMovie = value;
-                OnPropertyChanged("SelectedMovie");
             }
         }
 
@@ -221,6 +212,30 @@ namespace Task2
             }
         }
 
+        private RelayCommand newTokenCommand;
+        public RelayCommand NewTokenCommand
+        {
+            get
+            {
+                return newTokenCommand ??
+                  (newTokenCommand = new RelayCommand(obj =>
+                  {
+                      try
+                      {
+                          string bearer = dialogService.ShowDialogMessage("Введите токен");
+                          _dataService.NewToken(bearer);
+                          LoadData();
+
+                          dialogService.ShowMessage("Новый токен применён успешно, данные перезагружены");
+                      }
+                      catch (Exception ex)
+                      {
+                          dialogService.ShowMessage(ex.Message);
+                      }
+                  }));
+            }
+        }
+
         private RelayCommand applyFilter;
         public RelayCommand ApplyFilter
         {
@@ -233,7 +248,7 @@ namespace Task2
                       {
                           Validate(MovieFilter);
 
-                          filteredMovies = (from movie in db.Movies
+                          filteredMovies = (from movie in allMovies
                                         where (movie.MovieName == MovieFilter.MovieName || MovieFilter.MovieName == null || MovieFilter.MovieName == "")
                                            && (movie.FirstName == MovieFilter.FirstName || MovieFilter.FirstName == null || MovieFilter.FirstName == "")
                                            && (movie.LastName == MovieFilter.LastName || MovieFilter.LastName == null || MovieFilter.LastName == "")
@@ -254,21 +269,41 @@ namespace Task2
             }
         }
 
+        private readonly RESTDataService _dataService;
+
+        private async void LoadData()
+        {
+            try
+            {
+                allMovies = await _dataService.GetMoviesAsync();
+                filteredMovies = allMovies;
+
+                PageCount = (int)Math.Ceiling((double)filteredMovies.Count / _PageSize);
+                PageCount = PageCount == 0 ? 1 : PageCount;
+                IsNextEnabled = PageCount > PageIndex ? true : false;
+                ViewPage();
+            }
+            catch (Exception ex)
+            {
+                dialogService.ShowMessage(ex.Message);
+            }
+        }
+
         public ApplicationViewModel(IDialogService dialogService, IFileOpenService fileOpenService, Dictionary<string, IFileSaveService> fileSaveServices)
         {
             this.dialogService = dialogService;
             this.fileOpenService = fileOpenService;
             this.fileSaveServices = fileSaveServices;
 
+            string bearer = dialogService.ShowDialogMessage("Введите токен");
+            _dataService = new RESTDataService(bearer);
+
             db.Database.EnsureCreated();
             db.Movies.Load();
-            allMovies = db.Movies.Local.ToList();
-            filteredMovies = new List<Movie>(allMovies);
-            Movies = new ObservableCollection<Movie>(filteredMovies.Skip(_PageSize * (PageIndex - 1)).Take(_PageSize));
+            Movies = new ObservableCollection<Movie>();
+            filteredMovies = new List<Movie>();
 
-            PageCount = (int)Math.Ceiling((double)filteredMovies.Count / _PageSize);
-            PageCount = PageCount == 0 ? 1 : PageCount;
-            IsNextEnabled = PageCount > PageIndex ? true : false;
+            LoadData();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.VisualBasic;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,11 @@ namespace Task2
         public void ShowMessage(string message)
         {
             MessageBox.Show(message);
+        }
+
+        public string ShowDialogMessage(string message)
+        {
+            return Interaction.InputBox(message);
         }
     }
 }
