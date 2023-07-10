@@ -1,0 +1,46 @@
+﻿@model IEnumerable<UserViewModel>
+@using System.Security.Claims;
+@using Microsoft.AspNetCore.Mvc;
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.UserName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Role)
+            </th>
+            <th><label>Change role</label></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => user.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => user.Email)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => user.Role)
+                </td>
+                <td>
+                    @if (!User.FindFirstValue(ClaimTypes.NameIdentifier).Equals(user.UserId)) {
+                    @using (Html.BeginForm("ChangeRole", "Users", FormMethod.Post))
+                    {
+                        var result = user.Role.Contains("User") ? "Admin" : "User";
+                        @Html.Hidden("userId", user.UserId)
+                        @Html.Hidden("oldRole", user.Role)
+                        @Html.Hidden("newRole", result)
+                        <input type="submit" value="Change to @result" onclick="return confirm('Изменить роль?');" />
+                        }}
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

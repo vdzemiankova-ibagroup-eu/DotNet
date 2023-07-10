@@ -1,0 +1,52 @@
+﻿@model MovieCategoriesViewModel
+@{
+    ViewData["Title"] = "Список фильмов";
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Фильмопоиск</title>
+</head>
+<body>
+    <h3>Изменение фильма</h3>
+    <div>
+        @using (Html.BeginForm("Edit", "Edit", new { id = Model.Movie.Id, enctype = "multipart/form-data" }, FormMethod.Post))
+        {
+            @Html.HiddenFor(a => a.Movie.Id)
+            <p>Введите название фильма</p>
+            @Html.EditorFor(a => a.Movie.MovieName)
+            @Html.ValidationMessageFor(a => a.Movie.MovieName)
+            <p>Введите имя режиссёра</p>
+            @Html.TextBoxFor(a => a.Movie.FirstName)
+            @Html.ValidationMessageFor(a => a.Movie.FirstName)
+            <p>Введите фамилию режиссёра</p>
+            @Html.TextBoxFor(a => a.Movie.LastName)
+            @Html.ValidationMessageFor(a => a.Movie.LastName)
+            <p>Введите год выхода</p>
+            @Html.TextBoxFor(a => a.Movie.MovieYear)
+            @Html.ValidationMessageFor(a => a.Movie.MovieYear)
+            <p>Введите рейтинг</p>
+            @Html.TextBoxFor(a => a.Movie.MovieRating)
+            @Html.ValidationMessageFor(a => a.Movie.MovieRating)
+            <br>
+            <p>Выберите категории</p>
+            @Html.ListBox("categoryIds",
+                Model.Categories.Select(m => new SelectListItem
+                {
+                    Selected = ViewBag.SelectedCategories.Contains(m.Id) ? true : false,
+                    Value = m.Id.ToString(),
+                    Text = m.Name
+                }),
+                new { @class = "form-control" }
+            )
+            @Html.ActionLink("Добавить категорию", "Add", "Category")
+            <br>
+            <br>
+            <input type="submit" value="Изменить">
+        }
+
+        @Html.ActionLink("Вернуться назад", "Back")
+    </div>
+</body>
+</html>

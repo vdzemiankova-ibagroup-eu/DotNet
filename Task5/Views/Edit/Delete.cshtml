@@ -1,0 +1,36 @@
+﻿@model Movie
+@{
+    ViewBag.Title = "Delete";
+    ViewData["Title"] = "Список фильмов";
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Фильмопоиск</title>
+</head>
+<body>
+    <h3>Удалениие фильма</h3>
+    @using (Html.BeginForm("DeleteConfirmed", "Edit", new { id = Model.Id }, FormMethod.Post))
+    {
+        <table>
+            <tr>
+                <td>Movie Name</td>
+                <td>First Name</td>
+                <td>Last Name</td>
+                <td>Movie Year</td>
+                <td>Movie Rating</td>
+            </tr>
+            <tr>
+                <td>@Model.MovieName</td>
+                <td>@Model.FirstName</td>
+                <td>@Model.LastName</td>
+                <td>@Model.MovieYear</td>
+                <td>@Model.MovieRating</td>
+            </tr>
+        </table>
+        <br>
+        <input type="submit" value="Удалить" />
+    }
+</body>
+</html>

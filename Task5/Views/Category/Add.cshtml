@@ -1,0 +1,27 @@
+﻿@model Category
+@{
+    ViewData["Title"] = "Список фильмов";
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Фильмопоиск</title>
+</head>
+<body>
+    <h3>Добавление категории</h3>
+    <div>
+        @using (Html.BeginForm("Add", "Category", new { enctype = "multipart/form-data" }, FormMethod.Post))
+        {
+            <p>Введите название категории</p>
+            @Html.EditorFor(a => a.Name)
+            @Html.ValidationMessageFor(a => a.Name)         
+            <br>
+            <br>
+            <input type="submit" value="Добавить">
+        }
+
+        @Html.ActionLink("Вернуться назад", "Back", "Edit")
+    </div>
+</body>
+</html>

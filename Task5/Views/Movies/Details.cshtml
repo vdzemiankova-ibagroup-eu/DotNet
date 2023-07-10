@@ -1,0 +1,84 @@
+﻿@{
+    ViewBag.Title = "Подробности";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model Movie
+
+<h2>Информация о фильме @Model.MovieName</h2>
+<div>
+    <table>
+        <tr>
+            <td>Movie Name</td>
+            <td>First Name</td>
+            <td>Last Name</td>
+            <td>Movie Year</td>
+            <td>Movie Rating</td>
+        </tr>
+        <tr>
+            <td>@Model.MovieName</td>
+            <td>@Model.FirstName</td>
+            <td>@Model.LastName</td>
+            <td>@Model.MovieYear</td>
+            <td>@Model.MovieRating</td>
+        </tr>
+    </table>
+    <br>
+    <br>
+    <h1>Комментарии</h1>
+    <br>
+    <br>
+    @if (ViewBag.Count > 0)
+    {
+    <table>
+        <tr>
+            <td>User Name</td>
+            <td>Comment</td>
+            <td>Grade</td>
+            <td></td>
+        </tr>
+        @foreach (var comment in ViewBag.Comments)
+        {
+            <tr>
+                <td>@comment.UserName</td>
+                <td>@comment.Comment</td>
+                <td>@comment.Grade</td>
+                    <td>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            @using (Html.BeginForm("Delete", "Comments", new { id = comment.Id }, FormMethod.Post))
+                            {
+                                <input type="submit" value="Delete" class="btn btn-danger" onclick="return confirm('Удалить комментарий?');" />
+                            }
+                        }
+                </td>
+            </tr>
+        }
+    </table>
+    }
+    else
+    {
+        <label>Этот фильм ещё никто не прокомментировал</label>
+    }
+    <br>
+    <br>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        @using (Html.BeginForm("Add", "Comments", FormMethod.Post))
+        {
+            <p>Комментарий</p>
+            @Html.Hidden("movieId", Model.Id)
+            @Html.Editor("comment")
+            <br>
+            <p>Оценка</p>
+            @for (int i = 1; i <= 5; i++)
+            {
+                @Html.RadioButton("grade", i) <label>@i      </label>
+            }
+            <br>
+            <br>
+            <input type="submit" value="Оставить комментарий">
+        }
+    }
+</div>
+

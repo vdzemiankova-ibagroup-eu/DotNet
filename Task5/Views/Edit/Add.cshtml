@@ -1,0 +1,51 @@
+﻿@model MovieCategoriesViewModel
+@{
+    ViewData["Title"] = "Список фильмов";
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Фильмопоиск</title>
+</head>
+<body>
+    <h3>Добавление фильма</h3>
+    <div>
+        @using (Html.BeginForm("Add", "Edit", new { enctype = "multipart/form-data" }, FormMethod.Post))
+        {
+            <p>Введите название фильма</p>
+            @Html.EditorFor(a => a.Movie.MovieName)
+            @Html.ValidationMessageFor(a => a.Movie.MovieName)
+            <p>Введите имя режиссёра</p>
+            @Html.TextBoxFor(a => a.Movie.FirstName)
+            @Html.ValidationMessageFor(a => a.Movie.FirstName)
+            <p>Введите фамилию режиссёра</p>
+            @Html.TextBoxFor(a => a.Movie.LastName)
+            @Html.ValidationMessageFor(a => a.Movie.LastName)
+            <p>Введите год выхода</p>
+            @Html.TextBoxFor(a => a.Movie.MovieYear)
+            @Html.ValidationMessageFor(a => a.Movie.MovieYear)
+            <p>Введите рейтинг</p>
+            @Html.TextBoxFor(a => a.Movie.MovieRating)
+            @Html.ValidationMessageFor(a => a.Movie.MovieRating)
+            <br>
+            <p>Выберите категории</p>
+            @Html.ListBox("categoryIds",
+                Model.Categories.Select(m => new SelectListItem
+                {
+                    Value = m.Id.ToString(),
+                    Text = m.Name
+                }),
+                new { @class = "form-control" }
+            )
+            //<a href="~/Category/Add">Добавить категорию</a>
+            @Html.ActionLink("Добавить категорию", "Add", "Category")
+            <br>
+            <br>
+            <input type="submit" value="Добавить">
+        }
+
+        @Html.ActionLink("Вернуться назад", "Back")
+    </div>
+</body>
+</html>

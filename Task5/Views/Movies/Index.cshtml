@@ -1,0 +1,50 @@
+﻿@model List<MovieGradeCategoryViewModel>
+@{
+    ViewData["Title"] = "Список фильмов";
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Фильмопоиск</title>
+</head>
+<body>
+    <h3>Фильмы</h3>
+    <form class="form-inline">
+        <label>Выберите категорию:</label>
+        <select name="categoryId" class="form-control">
+            @foreach (var category in ViewBag.Categories)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </select>
+        <input type="submit" value="Фильтр">
+    </form>
+
+    <table>
+        <tr>
+            <td>Movie Name</td>
+            <td>First Name</td>
+            <td>Last Name</td>
+            <td>Movie Year</td>
+            <td>Movie Rating</td>
+            <td>Categories</td>
+            <td>User Grade</td>
+            <td></td>
+        </tr>
+        @foreach (var movie in Model)
+        {
+            <tr>
+                <td>@movie.Movie.MovieName</td>
+                <td>@movie.Movie.FirstName</td>
+                <td>@movie.Movie.LastName</td>
+                <td>@movie.Movie.MovieYear</td>
+                <td>@movie.Movie.MovieRating</td>
+                <td>@Html.Raw(@movie.Categories.Replace("\n", "<br />"))</td>
+                <td>@movie.AvgGrade</td>
+                <td><a href="~/Movies/Details/@movie.Movie.Id">Подробнее</a></td>
+            </tr>
+        }
+    </table>
+</body>
+</html>

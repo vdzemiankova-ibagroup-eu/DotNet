@@ -1,0 +1,39 @@
+﻿@model List<MovieCategoriesViewModel>
+@{
+    ViewData["Title"] = "Список фильмов";
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Фильмопоиск</title>
+</head>
+<body>
+    <h3>Редактирование фильмов</h3>
+    <a href="~/Edit/Add">Добавить новый фильм</a>
+    <table>
+        <tr>
+            <td>Movie Name</td>
+            <td>First Name</td>
+            <td>Last Name</td>
+            <td>Movie Year</td>
+            <td>Movie Rating</td>
+            <td>Categories</td>
+            <td></td>
+        </tr>
+        @foreach (var movie in Model)
+        {
+            <tr>
+                <td>@movie.Movie.MovieName</td>
+                <td>@movie.Movie.FirstName</td>
+                <td>@movie.Movie.LastName</td>
+                <td>@movie.Movie.MovieYear</td>
+                <td>@movie.Movie.MovieRating</td>
+                <td>@Html.Raw(string.Join("<br />", movie.Categories.Select(x => x.Name)))</td>
+                <td><a href="~/Edit/Edit/@movie.Movie.Id">Изменить</a></td>
+                <td><a href="~/Edit/Delete/@movie.Movie.Id">Удалить</a></td>
+            </tr>
+        }
+    </table>
+</body>
+</html>
