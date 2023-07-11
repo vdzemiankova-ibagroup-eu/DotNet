@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Task4.Models;
+using Task4.Repositories;
 
 namespace Task4
 {
@@ -18,11 +19,6 @@ namespace Task4
                 }
                 return _instance;
             }
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=MyDatabase;Integrated Security=True");
         }
 
         public DbSet<Movie> Movies { get; set; }

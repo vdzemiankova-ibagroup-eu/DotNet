@@ -6,7 +6,6 @@ using Task5.Models;
 
 namespace Task5.Data
 {
-    //public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole, string, IdentityUserClaim<string>, ApplicationUserRole, IdentityUserLogin<string>, IdentityRoleClaim<string>, IdentityUserToken<string>>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)

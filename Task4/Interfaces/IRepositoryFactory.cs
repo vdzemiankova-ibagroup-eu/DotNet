@@ -1,4 +1,4 @@
-﻿namespace Task4
+﻿namespace Task4.Interfaces
 {
     public interface IRepositoryFactory
     {

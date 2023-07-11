@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Task4.Interfaces;
 using Task4.Models;
 
 namespace Task4.Controllers
@@ -11,15 +12,14 @@ namespace Task4.Controllers
     {
         private readonly IMovieRepository _repository;
 
-        public MovieController(IRepositoryFactory repositoryFactory)
+        public MovieController(IMovieRepository movieRepository)
         {
-            _repository = repositoryFactory.CreateMovieRepository();
+            _repository = movieRepository;
         }
 
         [HttpGet]
         public ActionResult<List<Movie>> GetAll()
         {
-            //return _repository.GetAll();
             var movies = _repository.GetAll();
             return Ok(movies);
         }
@@ -50,12 +50,8 @@ namespace Task4.Controllers
             {
                 return NotFound();
             }
-            existingMovie.FirstName = movie.FirstName;
-            existingMovie.LastName = movie.LastName;
-            existingMovie.MovieName = movie.MovieName;
-            existingMovie.MovieYear = movie.MovieYear;
-            existingMovie.MovieRating = movie.MovieRating;
-            _repository.Update(existingMovie);
+
+            _repository.Update(existingMovie, movie);
             return Ok(existingMovie);
         }
 

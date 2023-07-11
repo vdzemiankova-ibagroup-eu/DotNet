@@ -1,5 +1,8 @@
 ﻿using Task4.Models;
 using Microsoft.OpenApi.Models;
+using Task4.Interfaces;
+using Task4.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Task4
 {
@@ -16,8 +19,10 @@ namespace Task4
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddDbContext<MoviesContext>();
-            builder.Services.AddScoped<IRepositoryFactory, MovieRepositoryFactory>();
+            builder.Services.AddDbContext<MoviesContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services.AddScoped<IMovieRepository, MovieRepository>(provider => new MovieRepository(provider.GetService<MoviesContext>()));
 
             builder.Services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>

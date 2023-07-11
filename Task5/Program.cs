@@ -22,8 +22,6 @@ namespace Task5
 {
     class Program
     {
-        static Movie movie = new Movie();
-
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);

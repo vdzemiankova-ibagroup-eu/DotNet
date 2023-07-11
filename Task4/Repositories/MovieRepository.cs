@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Task4.Interfaces;
+using Task4.Models;
 
-namespace Task4.Models
+namespace Task4.Repositories
 {
     public class MovieRepository : IMovieRepository
     {
@@ -27,9 +29,15 @@ namespace Task4.Models
             _context.SaveChanges();
         }
 
-        public void Update(Movie movie)
+        public void Update(Movie existingMovie, Movie updatedMovie)
         {
-            _context.Entry(movie).State = EntityState.Modified;
+            existingMovie.FirstName = updatedMovie.FirstName;
+            existingMovie.LastName = updatedMovie.LastName;
+            existingMovie.MovieName = updatedMovie.MovieName;
+            existingMovie.MovieYear = updatedMovie.MovieYear;
+            existingMovie.MovieRating = updatedMovie.MovieRating;
+
+            _context.Entry(existingMovie).State = EntityState.Modified;
             _context.SaveChanges();
         }
 
