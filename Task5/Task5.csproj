@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Abp" Version="8.2.0" />
+    <PackageReference Include="Castle.Core" Version="5.1.1" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="IdentityModel" Version="6.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.19" />

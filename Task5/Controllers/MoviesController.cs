@@ -15,9 +15,9 @@ using Microsoft.Ajax.Utilities;
 using Castle.Core.Internal;
 using Polly;
 using Abp.Runtime.Security;
-using Task5.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Task5.Controllers
 {
@@ -40,9 +40,9 @@ namespace Task5.Controllers
             string[] roles = new string[] { "Admin", "User" };
             foreach (string role in roles)
             {
-                if (!_dbContext.IdentityRoles.Any(r => r.Name == role))
+                if (!_dbContext.IdentityUserRole.Any(r => r.Name == role))
                 {
-                    _dbContext.IdentityRoles.Add(new IdentityRole(role) { NormalizedName = role.ToUpper()});
+                    _dbContext.IdentityUserRole.Add(new IdentityRole(role) { NormalizedName = role.ToUpper()});
                     _dbContext.SaveChanges();
                 }
             }

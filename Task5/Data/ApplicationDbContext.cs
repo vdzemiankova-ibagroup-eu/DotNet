@@ -17,11 +17,12 @@ namespace Task5.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<MovieCategory> MovieCategories { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
-        public DbSet<IdentityRole> IdentityRoles { get; set; }
+        public DbSet<IdentityRole> IdentityUserRole { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<IdentityUserRole<string>>().HasKey(p => new { p.UserId, p.RoleId });
         }
 
     }
