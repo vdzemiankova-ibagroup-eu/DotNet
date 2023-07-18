@@ -17,6 +17,7 @@ using Task5.Data;
 using static IdentityModel.OidcConstants;
 using Microsoft.Owin;
 using Owin;
+using Microsoft.Ajax.Utilities;
 
 namespace Task5
 {
@@ -56,6 +57,17 @@ namespace Task5
 
             builder.Services.AddDbContext<Data.ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            var serviceProvider = builder.Services.BuildServiceProvider();
+
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<Data.ApplicationDbContext>();
+                if (db.Database.GetPendingMigrations().Any())
+                {
+                    db.Database.Migrate();
+                }
+            }
 
             builder.Services.AddScoped<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();
             builder.Services.AddScoped<SignInManager<ApplicationUser>, SignInManager<ApplicationUser>>();
