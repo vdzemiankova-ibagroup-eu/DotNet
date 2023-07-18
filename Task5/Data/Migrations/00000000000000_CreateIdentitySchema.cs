@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 
 namespace Task5.Data.Migrations
@@ -193,26 +191,6 @@ namespace Task5.Data.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
-
-            migrationBuilder.InsertData(
-                table: "AspNetRoles",
-                columns: new[] { "Name", "NormalizedName" },
-                values: new object[,]
-                        {
-                            { "Admin", "Admin" },
-                            { "User", "User" }
-                        }
-                );
-
-            migrationBuilder.InsertData(
-                table: "AspNetUsers",
-                columns: new[] { "Name", "NormalizedName" },
-                values: new object[,]
-                        {
-                            { "Admin", "Admin" },
-                            { "User", "User" }
-                        }
-            );
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

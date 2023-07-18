@@ -23,6 +23,10 @@ namespace Task5.Data
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<IdentityUserRole<string>>().HasKey(p => new { p.UserId, p.RoleId });
+
+            modelBuilder.Entity<Comment>()
+                .Property(c => c.UserGrade)
+                .HasColumnType("decimal(10,2)");
         }
 
     }
