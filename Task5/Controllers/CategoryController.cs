@@ -1,17 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Task5.Models;
 using Microsoft.AspNetCore.Authorization;
+using Task5.Interfaces;
+using Task5.Repositories;
 
 namespace Task5.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class CategoryController : Controller
     {
-        private Data.ApplicationDbContext _dbContext;
+        private ICategoryRepository _categoryRepository;
 
-        public CategoryController(Data.ApplicationDbContext dbContext)
+        public CategoryController(ICategoryRepository categoryRepository)
         {
-            _dbContext = dbContext;
+            _categoryRepository = categoryRepository;
         }
 
         [HttpGet]
@@ -23,8 +25,7 @@ namespace Task5.Controllers
         [HttpPost]
         public IActionResult Add(Category category)
         {
-            _dbContext.Categories.Add(category);
-            _dbContext.SaveChanges();
+            _categoryRepository.Add(category);
             return RedirectToAction("Add", "Edit");
         }
     }

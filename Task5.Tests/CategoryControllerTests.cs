@@ -11,23 +11,21 @@ using System.Text;
 using System.Threading.Tasks;
 using Task5.Controllers;
 using Task5.Data;
+using Task5.Interfaces;
 using Task5.Models;
+using Moq;
 
 namespace Task5.Tests
 {
     public class CategoryControllerTests
     {
-        private readonly Data.ApplicationDbContext _dbContext;
+        private readonly Mock<ICategoryRepository> _mockCategoryRepository;
         private readonly CategoryController _categoryController;
 
         public CategoryControllerTests()
         {
-            var options = new DbContextOptionsBuilder<Data.ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestDbCategory")
-            .Options;
-
-            _dbContext = new Data.ApplicationDbContext(options);
-            _categoryController = new CategoryController(_dbContext);
+            _mockCategoryRepository = new Mock<ICategoryRepository>();
+            _categoryController = new CategoryController(_mockCategoryRepository.Object);
         }
 
         [Fact]
@@ -39,8 +37,6 @@ namespace Task5.Tests
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.Null(viewResult.ViewName);
-
-            _dbContext.Database.EnsureDeleted();
         }
 
         [Fact]
@@ -56,8 +52,6 @@ namespace Task5.Tests
             var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Add", redirectToActionResult.ActionName);
             Assert.Equal("Edit", redirectToActionResult.ControllerName);
-
-            _dbContext.Database.EnsureDeleted();
         }
     }
 }

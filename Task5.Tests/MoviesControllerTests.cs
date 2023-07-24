@@ -16,36 +16,35 @@ using System.Threading.Tasks;
 using Task5.Controllers;
 using Task5.Models;
 using Microsoft.Graph;
+using Task5.Interfaces;
 
 namespace Task5.Tests
 {
     public class MoviesControllerTests
     {
-        private readonly Mock<IMovieApi> _movieApiMock;
-        private readonly Data.ApplicationDbContext _dbContext;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly Mock<ICategoryRepository> _mockCategoryRepository;
+        private readonly Mock<ICommentRepository> _mockCommentRepository;
+        private readonly Mock<IMovieCategoryRepository> _mockMovieCategoryRepository;
+        private readonly Mock<IUserManagerRepository> _mockUserManagerRepository;
+        private readonly Mock<IMovieRepository> _mockMovieRepository;
+
         private readonly MoviesController _controller;
 
         public MoviesControllerTests()
         {
-            var options = new DbContextOptionsBuilder<Data.ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDbMovies")
-                .Options;
-            _movieApiMock = new Mock<IMovieApi>();
-            _dbContext = new Data.ApplicationDbContext(options);
+            _mockCategoryRepository = new Mock<ICategoryRepository>();
+            _mockCommentRepository = new Mock<ICommentRepository>();
+            _mockMovieCategoryRepository = new Mock<IMovieCategoryRepository>();
+            _mockUserManagerRepository = new Mock<IUserManagerRepository>();
+            _mockMovieRepository = new Mock<IMovieRepository>();
 
-            _userManager = new UserManager<ApplicationUser>(
-                new UserStore<ApplicationUser>(_dbContext),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-
-            _controller = new MoviesController(_movieApiMock.Object, _dbContext, _userManager);
+            _controller = new MoviesController(
+                _mockCategoryRepository.Object, 
+                _mockCommentRepository.Object,
+                _mockMovieCategoryRepository.Object,
+                _mockUserManagerRepository.Object,
+                _mockMovieRepository.Object
+                );
         }
 
         [Fact]
@@ -57,28 +56,22 @@ namespace Task5.Tests
                 new Movie { Id = 1, MovieName = "Movie 1", FirstName = "FName 1", LastName = "LMane 1", MovieRating = 1m, MovieYear = 2011 },
                 new Movie { Id = 1, MovieName = "Movie 2", FirstName = "FName 2", LastName = "LMane 2", MovieRating = 2m, MovieYear = 2012 }
             };
-            _movieApiMock.Setup(x => x.GetAllAsync()).ReturnsAsync(movies);
+            _mockMovieRepository.Setup(x => x.GetAllAsync()).ReturnsAsync(movies);
 
             var comments = new List<Comment>
             {
-                new Comment { Id = 1, MovieId = 1, UserGrade = 5, UserId = "1" },
-                new Comment { Id = 2, MovieId = 1, UserGrade = 3, UserId = "2" },
-                new Comment { Id = 3, MovieId = 2, UserGrade = 4, UserId = "1" }
+                new Comment { Id = 1, MovieId = 1, UserGrade = 5, UserId = "user1" },
+                new Comment { Id = 2, MovieId = 1, UserGrade = 3, UserId = "user2" },
+                new Comment { Id = 3, MovieId = 2, UserGrade = 4, UserId = "user1" }
             };
-            foreach (var comment in comments)
-            {
-                _dbContext.Comments.Add(comment);
-            }
+            _mockCommentRepository.Setup(x => x.GetAll()).Returns(comments);
 
             var categories = new List<Category>
             {
                 new Category { Id = 1, Name = "Category 1" },
                 new Category { Id = 2, Name = "Category 2" }
             };
-            foreach (var categorie in categories)
-            {
-                _dbContext.Categories.Add(categorie);
-            }
+            _mockCategoryRepository.Setup(x => x.GetAll()).Returns(categories);
 
             var movieCategories = new List<MovieCategory>
             {
@@ -86,11 +79,7 @@ namespace Task5.Tests
                 new MovieCategory { Id = 2, MovieId = 1, CategoryId = 2 },
                 new MovieCategory { Id = 3, MovieId = 2, CategoryId = 2 }
             };
-            foreach (var movieCategorie in movieCategories)
-            {
-                _dbContext.MovieCategories.Add(movieCategorie);
-            }
-            _dbContext.SaveChanges();
+            _mockMovieCategoryRepository.Setup(x => x.GetAll()).Returns(movieCategories);
 
             // Act
             var result = await _controller.Index(1);
@@ -99,8 +88,6 @@ namespace Task5.Tests
             var viewResult = Assert.IsAssignableFrom<ViewResult>(result);
             var viewModelList = Assert.IsAssignableFrom<List<MovieGradeCategoryViewModel>>(viewResult.ViewData.Model);
             Assert.Equal(2, viewModelList.Count);
-
-            _dbContext.Database.EnsureDeleted();
         }
 
         [Fact]
@@ -108,29 +95,21 @@ namespace Task5.Tests
         {
             // Arrange
             var movie = new Movie { Id = 1, MovieName = "Movie 1", FirstName = "FName 1", LastName = "LMane 1", MovieRating = 1m, MovieYear = 2011 };
-            _movieApiMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(movie);
-            var result1 = await _movieApiMock.Object.GetByIdAsync(1);
+            _mockMovieRepository.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(movie);
 
-            var user1 = new ApplicationUser() { UserName = "user1@example.com", Email = "user1@example.com" };
-            var user2 = new ApplicationUser() { UserName = "user2@example.com", Email = "user2@example.com" };
-
-            await _userManager.CreateAsync(user1);
-            await _userManager.CreateAsync(user2);
-
-            var userId1 = await _userManager.GetUserIdAsync(user1);
-            var userId2 = await _userManager.GetUserIdAsync(user2);
+            var users = new List<ApplicationUser>
+            {
+                new ApplicationUser { Id = "user1", UserName = "user1@example.com", Email = "user1@example.com" },
+                new ApplicationUser { Id = "user2", UserName = "user2@example.com", Email = "user2@example.com" }
+            };
+            _mockUserManagerRepository.Setup(x => x.GetAllUsers()).Returns(users);
 
             var comments = new List<Comment>
             {
-                new Comment { Id = 1, MovieId = 1, UserId = userId1 },
-                new Comment { Id = 2, MovieId = 1, UserId = userId2 }
+                new Comment { Id = 1, MovieId = 1, UserId = "user1" },
+                new Comment { Id = 2, MovieId = 1, UserId = "user2" }
             };
-            foreach (var comment in comments)
-            {
-                _dbContext.Comments.Add(comment);
-            }
-            _dbContext.SaveChanges();
-            var fdv = _dbContext.Comments;
+            _mockCommentRepository.Setup(x => x.GetAll()).Returns(comments);
 
             // Act
             var result = await _controller.Details(1);
@@ -142,8 +121,6 @@ namespace Task5.Tests
 
             var commentsViewModel = Assert.IsAssignableFrom<IEnumerable<CommentViewModel>>(viewResult.ViewData["Comments"]);
             Assert.Equal(2, commentsViewModel.Count());
-
-            _dbContext.Database.EnsureDeleted();
         }
     }
 }

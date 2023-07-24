@@ -18,6 +18,8 @@ using static IdentityModel.OidcConstants;
 using Microsoft.Owin;
 using Owin;
 using Microsoft.Ajax.Utilities;
+using Task5.Interfaces;
+using Task5.Repositories;
 
 namespace Task5
 {
@@ -55,6 +57,13 @@ namespace Task5
 
             builder.Services.AddSingleton(restClient);
 
+            builder.Services.AddHttpClient("movieHTTPClient", client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7242");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", responseToken);
+            });
+         
+
             builder.Services.AddDbContext<Data.ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -71,6 +80,13 @@ namespace Task5
 
             builder.Services.AddScoped<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();
             builder.Services.AddScoped<SignInManager<ApplicationUser>, SignInManager<ApplicationUser>>();
+
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>(provider => new CategoryRepository(provider.GetService<Data.ApplicationDbContext>()));
+            builder.Services.AddScoped<ICommentRepository, CommentRepository>(provider => new CommentRepository(provider.GetService<Data.ApplicationDbContext>()));
+            builder.Services.AddScoped<IMovieCategoryRepository, MovieCategoryRepository>(provider => new MovieCategoryRepository(provider.GetService<Data.ApplicationDbContext>()));
+            builder.Services.AddScoped<IMovieRepository, MovieRepository>(provider => new MovieRepository(provider.GetService<IMovieApi>(), provider.GetService<IHttpClientFactory>()));
+            builder.Services.AddScoped<IUserManagerRepository, UserManagerRepository>(provider => new UserManagerRepository(provider.GetService<Data.ApplicationDbContext>(), provider.GetService<UserManager<ApplicationUser>>()));
+
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                .AddEntityFrameworkStores<Data.ApplicationDbContext>()

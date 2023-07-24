@@ -18,53 +18,42 @@ using Abp.Runtime.Security;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Task5.Interfaces;
+using System.Net.Http;
+using Task5.Repositories;
 
 namespace Task5.Controllers
 {
     public class MoviesController : Controller
     {
-        private IMovieApi _movieApi;
-        private Data.ApplicationDbContext _dbContext;
-        private UserManager<ApplicationUser> _userManager;
+        private ICategoryRepository _categoryRepository;
+        private ICommentRepository _commentRepository;
+        private IMovieCategoryRepository _movieCategorieRepository;
+        private IUserManagerRepository _userManagerRepository;
+        private IMovieRepository _movieRepository;
 
-        public MoviesController(IMovieApi movieApi, Data.ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager)
+        public MoviesController(
+            ICategoryRepository categoryRepository, 
+            ICommentRepository commentRepository, 
+            IMovieCategoryRepository movieCategorieRepository,
+            IUserManagerRepository userManagerRepository,
+            IMovieRepository movieRepository
+            )
         {
-            _movieApi = movieApi;
-            _dbContext = dbContext;
-            _userManager = userManager;
-            SeedData();
-        }
-
-        private async void SeedData()
-        {
-            string[] roles = new string[] { "Admin", "User" };
-            foreach (string role in roles)
-            {
-                if (!_dbContext.IdentityUserRole.Any(r => r.Name == role))
-                {
-                    _dbContext.IdentityUserRole.Add(new IdentityRole(role) { NormalizedName = role.ToUpper()});
-                    _dbContext.SaveChanges();
-                }
-            }
-
-            if (!_dbContext.ApplicationUsers.Any(u => u.UserName == "admin@gmail.com"))
-            {
-                var user = new ApplicationUser { UserName = "admin@gmail.com", Email = "admin@gmail.com" };
-                var result = await _userManager.CreateAsync(user, "gkm%3/v8vQv9c9R");
-                if (result.Succeeded)
-                {
-                    await _userManager.AddToRoleAsync(user, "Admin");
-                }
-                _dbContext.SaveChanges();
-            }
+            _categoryRepository = categoryRepository;
+            _commentRepository = commentRepository;
+            _movieCategorieRepository = movieCategorieRepository;
+            _userManagerRepository = userManagerRepository;
+            _movieRepository = movieRepository;
         }
 
         public async Task<IActionResult> Index(int? categoryId)
         {
-            var movies = await _movieApi.GetAllAsync();
-            var comments = _dbContext.Comments.ToList();
-            var categories = _dbContext.Categories.ToList();
-            var movieCategories = _dbContext.MovieCategories.ToList();
+            var movies = await _movieRepository.GetAllAsync();
+
+            var comments = _commentRepository.GetAll();
+            var categories = _categoryRepository.GetAll();
+            var movieCategories = _movieCategorieRepository.GetAll();
 
             var viewModelList = new List<MovieGradeCategoryViewModel>();
 
@@ -99,9 +88,9 @@ namespace Task5.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
-            var movie = await _movieApi.GetByIdAsync(id);
-            var comments = _dbContext.Comments.ToList();
-            var users = _dbContext.ApplicationUsers.ToList();
+            var movie = await _movieRepository.GetByIdAsync(id);
+            var comments = _commentRepository.GetAll();
+            var users = _userManagerRepository.GetAllUsers();
 
             var usersComments = from user in users
                                 join comment in comments  on user.Id equals comment.UserId

@@ -1,7 +1,7 @@
 ﻿using RestEase;
 using Task5.Models;
 
-namespace Task5
+namespace Task5.Interfaces
 {
     [BasePath("api/Movie")]
     public interface IMovieApi

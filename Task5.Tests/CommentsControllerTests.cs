@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,23 +9,20 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Task5.Controllers;
+using Task5.Interfaces;
 using Task5.Models;
 
 namespace Task5.Tests
 {
     public class CommentsControllerTests
     {
-        private readonly Data.ApplicationDbContext _dbContext;
+        private readonly Mock<ICommentRepository> _mockCommentRepository;
         private readonly CommentsController _commentsController;
 
         public CommentsControllerTests()
         {
-            var options = new DbContextOptionsBuilder<Data.ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestDbComments")
-            .Options;
-
-            _dbContext = new Data.ApplicationDbContext(options);
-            _commentsController = new CommentsController(_dbContext);
+            _mockCommentRepository = new Mock<ICommentRepository>();
+            _commentsController = new CommentsController(_mockCommentRepository.Object);
         }
 
         [Fact]
@@ -50,9 +48,10 @@ namespace Task5.Tests
             var result = _commentsController.Add(movieId, grade, comment);
 
             // Assert
-            Assert.IsType<RedirectToActionResult>(result);
-
-            _dbContext.Database.EnsureDeleted();
+            var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("Details", redirectToActionResult.ActionName);
+            Assert.Equal("Movies", redirectToActionResult.ControllerName);
+            Assert.Equal(movieId, redirectToActionResult.RouteValues["id"]);
         }
 
         [Fact]
@@ -60,16 +59,16 @@ namespace Task5.Tests
         {
             // Arrange
             var comment = new Comment { Id = 1, MovieId = 1, UserId = "123" };
-            _dbContext.Comments.Add(comment);
-            _dbContext.SaveChanges();
+            _mockCommentRepository.Setup(x => x.Delete(comment.Id)).Returns(comment);
 
             // Act
             var result = _commentsController.Delete(1);
 
             // Assert
-            Assert.IsType<RedirectToActionResult>(result);
-
-            _dbContext.Database.EnsureDeleted();
+            var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("Details", redirectToActionResult.ActionName);
+            Assert.Equal("Movies", redirectToActionResult.ControllerName);
+            Assert.Equal(comment.MovieId, redirectToActionResult.RouteValues["id"]);
         }
     }
 }

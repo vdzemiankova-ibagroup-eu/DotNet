@@ -9,27 +9,38 @@ using System.Web;
 using Task5.Models;
 using Abp;
 using System.Data;
+using Task5.Interfaces;
+using Task5.Repositories;
 
 namespace Task5.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class EditController : Controller
     {
-        private IMovieApi _movieApi;
-        private Data.ApplicationDbContext _dbContext;
+        private ICategoryRepository _categoryRepository;
+        private IMovieRepository _movieRepository;
+        private ICommentRepository _commentRepository;
+        private IMovieCategoryRepository _movieCategoryRepository;
 
-        public EditController(IMovieApi movieApi, Data.ApplicationDbContext dbContext)
+        public EditController(  
+            ICategoryRepository categoryRepository,
+            IMovieRepository movieRepository,
+            ICommentRepository commentRepository,
+            IMovieCategoryRepository movieCategoryRepository
+            )
         {
-            _movieApi = movieApi;
-            _dbContext = dbContext;
+            _categoryRepository = categoryRepository;
+            _movieRepository = movieRepository;
+            _commentRepository = commentRepository;
+            _movieCategoryRepository = movieCategoryRepository;
         }
 
         public async Task<IActionResult> Index()
         {
-            var movies = await _movieApi.GetAllAsync();
-            var comments = _dbContext.Comments.ToList();
-            var categories = _dbContext.Categories.ToList();
-            var movieCategories = _dbContext.MovieCategories.ToList();
+            var movies = await _movieRepository.GetAllRestEaseAsync();
+            var comments = _commentRepository.GetAll();
+            var categories = _categoryRepository.GetAll();
+            var movieCategories = _movieCategoryRepository.GetAll();
 
             var viewModelList = new List<MovieCategoriesViewModel>();
 
@@ -57,21 +68,21 @@ namespace Task5.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             ViewBag.MovieId = id;
-            var movie = await _movieApi.GetByIdAsync(id);
+            var movie = await _movieRepository.GetByIdRestEaseAsync(id);
             return View(movie);
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _movieApi.DeleteAsync(id);
+            await _movieRepository.DeleteAsync(id);
             return RedirectToAction("Index");
         }
 
         [HttpGet]
         public IActionResult Add()
         {
-            List<Category> category = _dbContext.Categories.ToList().Select(c => new Category { Id = c.Id, Name = c.Name }).ToList();
+            List<Category> category = _categoryRepository.GetAll();
             MovieCategoriesViewModel movieCategoriesViewModel = new MovieCategoriesViewModel() { Categories = category };
             return View(movieCategoriesViewModel);
         }
@@ -79,13 +90,12 @@ namespace Task5.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(Movie movie, List<int> categoryIds)
         {
-            var result = await _movieApi.AddAsync(movie);
+            var result = await _movieRepository.AddAsync(movie);
             if (result != null)
             {
                 foreach (int id in categoryIds)
                 {
-                    _dbContext.MovieCategories.Add(new MovieCategory { MovieId = result.Id, CategoryId = id});
-                    _dbContext.SaveChanges();
+                    _movieCategoryRepository.Add(new MovieCategory { MovieId = result.Id, CategoryId = id});
                 }
             }
             else
@@ -105,11 +115,11 @@ namespace Task5.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             ViewBag.MovieId = id;
-            Movie movie = await _movieApi.GetByIdAsync(id);
+            Movie movie = await _movieRepository.GetByIdRestEaseAsync(id);
 
-            List<Category> category = _dbContext.Categories.ToList().Select(c => new Category { Id = c.Id, Name = c.Name }).ToList();
+            List<Category> category = _categoryRepository.GetAll();
             MovieCategoriesViewModel movieCategoriesViewModel = new MovieCategoriesViewModel() { Movie = movie, Categories = category };
-            ViewBag.SelectedCategories = _dbContext.MovieCategories.Where(x => x.MovieId == movie.Id).Select(x => x.CategoryId).ToList();
+            ViewBag.SelectedCategories = _movieCategoryRepository.GetIdsByMovieId(movie.Id); 
 
             return View(movieCategoriesViewModel);
         }
@@ -118,18 +128,15 @@ namespace Task5.Controllers
         public async Task<IActionResult> Edit(Movie movie, List<int> categoryIds)
         {
             
-            Movie result = await _movieApi.UpdateAsync(movie.Id, movie);
+            Movie result = await _movieRepository.UpdateAsync(movie);
 
             if (result != null)
             {
-                var itemsToRemove = _dbContext.MovieCategories.Where(x => x.MovieId == movie.Id);
-                _dbContext.MovieCategories.RemoveRange(itemsToRemove);
-                _dbContext.SaveChanges();
+                _movieCategoryRepository.DeleteByMovieId(movie.Id);
 
                 foreach (int id in categoryIds)
                 {
-                    _dbContext.MovieCategories.Add(new MovieCategory { MovieId = result.Id, CategoryId = id });
-                    _dbContext.SaveChanges();
+                    _movieCategoryRepository.Add(new MovieCategory { MovieId = result.Id, CategoryId = id });
                 }
             }
             else

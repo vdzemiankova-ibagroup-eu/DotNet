@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Task5.Interfaces;
 using Task5.Models;
 
 namespace Task5.Controllers
@@ -10,29 +11,26 @@ namespace Task5.Controllers
     [Authorize]
     public class CommentsController : Controller
     {
-        private Data.ApplicationDbContext _dbContext;
+        private ICommentRepository _commentRepository;
 
-        public CommentsController(Data.ApplicationDbContext dbContext)
+        public CommentsController(ICommentRepository commentRepository)
         {
-            _dbContext = dbContext;
+            _commentRepository = commentRepository;
         }
 
         [HttpPost]
         public IActionResult Add(int movieId, decimal grade, string comment)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _dbContext.Comments.Add(new Comment { MovieId = movieId, UserComment = comment, UserGrade = grade, UserId = userId});
-            
-            _dbContext.SaveChanges();
+            _commentRepository.Add(new Comment { MovieId = movieId, UserComment = comment, UserGrade = grade, UserId = userId });
+
             return RedirectToAction("Details", "Movies", new { id = movieId});
         }
 
         [HttpPost]
         public IActionResult Delete(int id)
         {
-            var comment = _dbContext.Comments.Find(id);
-            _dbContext.Comments.Remove(comment);
-            _dbContext.SaveChanges();
+            var comment = _commentRepository.Delete(id);
 
             return RedirectToAction("Details", "Movies", new { id = comment.MovieId });
         }
